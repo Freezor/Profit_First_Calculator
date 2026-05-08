@@ -1,0 +1,15 @@
+name: profit_first_calculator
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  json_annotation: ^4.9.0
+  logging: ^1.2.0
+
+dev_dependencies:
+  build_runner: ^2.4.13
+  json_serializable: ^6.8.0
+  test: ^1.25.8

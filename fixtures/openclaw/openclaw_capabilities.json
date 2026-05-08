@@ -1,0 +1,7 @@
+{
+  "runs": true,
+  "attention": true,
+  "commands": true,
+  "approvals": false,
+  "events": true
+}

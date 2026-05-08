@@ -1,0 +1,12 @@
+{
+  "baseUrl": "https://openclaw.example.com/api",
+  "instanceName": "Production OpenClaw",
+  "version": "1.4.2",
+  "capabilities": {
+    "runs": true,
+    "attention": true,
+    "commands": true,
+    "approvals": true,
+    "events": true
+  }
+}

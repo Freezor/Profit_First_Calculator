@@ -1,0 +1,12 @@
+{
+  "attentionItemId": "attn_01HX9ZVKW8E3P1XAZR9G4FP5V2",
+  "runId": "run_01HX9ZP6T7AN4Q7G5P1G3A8W9K",
+  "type": "approval",
+  "riskLevel": "high",
+  "title": "Approve database migration",
+  "reason": "The agent needs permission to add a new migration file.",
+  "recommendedAction": "Review the generated SQL and approve if it matches the requested schema change.",
+  "createdAt": "2026-05-08T12:20:00.000Z",
+  "status": "open",
+  "availableActions": ["approve", "reject", "comment"]
+}

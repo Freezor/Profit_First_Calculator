@@ -1,0 +1,12 @@
+{
+  "eventId": "evt_01HXA01B9Q2X7NQ7WZ4K3WJ9A1",
+  "runId": "run_01HX9ZP6T7AN4Q7G5P1G3A8W9K",
+  "timestamp": "2026-05-08T12:21:10.000Z",
+  "type": "tool_call.completed",
+  "severity": "info",
+  "summary": "Generated migration file successfully.",
+  "details": {
+    "toolName": "write_file",
+    "durationMs": 184
+  }
+}
