@@ -1,0 +1,4 @@
+{
+  "type": "message",
+  "text": "Please add tests for the migration rollback path before continuing."
+}

@@ -1,0 +1,14 @@
+{
+  "runId": "run_01HX9ZP6T7AN4Q7G5P1G3A8W9K",
+  "sourceType": "github",
+  "label": "Add billing domain models",
+  "goal": "Implement invoice models and tests for the billing MVP.",
+  "lifecycleState": "running",
+  "attentionState": "needs_attention",
+  "lastMeaningfulEvent": "Waiting for approval to update generated files.",
+  "lastActivityAt": "2026-05-08T12:15:30.000Z",
+  "createdAt": "2026-05-08T11:48:00.000Z",
+  "openInSourceUrl": "https://github.com/example/project/pull/42",
+  "isPinned": true,
+  "localNote": "High priority customer blocker."
+}
