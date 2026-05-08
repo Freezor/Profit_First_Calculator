@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profit First Rechner — Oliver Fries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0e;
+    --bg2: #191917;
+    --bg3: #222220;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0ede8;
+    --text2: #9b9890;
+    --text3: #5c5a57;
+    --green: #4ade80;
+    --green-dim: #166534;
+    --green-bg: rgba(74,222,128,0.08);
+    --red: #f87171;
+    --red-dim: #7f1d1d;
+    --red-bg: rgba(248,113,113,0.08);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251,191,36,0.08);
+    --blue: #60a5fa;
+    --blue-bg: rgba(96,165,250,0.08);
+    --accent: #e8e0d4;
+    --profit: #4ade80;
+    --tax: #f87171;
+    --owner: #60a5fa;
+    --ops: #9b9890;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 300;
+    color: var(--accent);
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--text2);
+  }
+  .header-note {
+    font-size: 13px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Section labels */
+  .sec-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Revenue slider */
+  .revenue-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .rev-label {
+    font-size: 13px;
+    color: var(--text2);
+    white-space: nowrap;
+    min-width: 100px;
+  }
+  .rev-slider-wrap { flex: 1; min-width: 200px; }
+  .rev-value {
+    font-family: 'Fraunces', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--accent);
+    min-width: 140px;
+    text-align: right;
+  }
+
+  /* Custom range slider */
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+  }
+  .bucket-slider { background: linear-gradient(to right, currentColor 0%, var(--border2) 0%); }
+
+  /* Buckets grid */
+  .buckets {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .bucket {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .bucket:hover { border-color: var(--border2); }
+  .bucket-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .bucket-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .bucket-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .bucket-amt {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    line-height: 1;
+  }
+  .bucket-hint {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+    margin-top: 6px;
+  }
+
+  /* Color accents per bucket */
+  .bucket-profit .bucket-amt { color: var(--profit); }
+  .bucket-tax .bucket-amt { color: var(--tax); }
+  .bucket-owner .bucket-amt { color: var(--owner); }
+
+  /* Warning */
+  .warn {
+    background: var(--red-bg);
+    border: 1px solid var(--red-dim);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--red);
+    margin-bottom: 1rem;
+    display: none;
+    font-family: 'DM Mono', monospace;
+  }
+  .info-box {
+    background: var(--green-bg);
+    border: 1px solid var(--green-dim);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--green);
+    margin-bottom: 2rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .tax-warn {
+    background: var(--red-bg);
+    border: 1px solid var(--red-dim);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    display: none;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  /* Metrics grid */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .metric {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+  }
+  .metric-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .metric-val {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--accent);
+  }
+  .metric-val.neg { color: var(--red); }
+  .metric-val.pos { color: var(--green); }
+  .metric-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  /* Flow calculation */
+  .flow {
+    background: var(--bg3);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .flow .fn { color: var(--accent); font-weight: 500; }
+  .flow .fm { color: var(--red); }
+  .flow .fo { color: var(--green); font-weight: 500; }
+  .flow-note {
+    width: 100%;
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  /* Netto total */
+  .netto-card {
+    border: 1px solid var(--blue);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 1.5rem;
+    background: var(--blue-bg);
+  }
+  .netto-label {
+    font-size: 14px;
+    color: var(--text2);
+  }
+  .netto-val {
+    font-family: 'Fraunces', serif;
+    font-size: 2.8rem;
+    font-weight: 300;
+    color: var(--blue);
+  }
+
+  /* Toggle checkbox */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 1rem;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+  }
+  input[type=checkbox] {
+    accent-color: var(--accent);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    line-height: 1.8;
+  }
+
+  /* Donut chart */
+  .chart-wrap {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .donut-container { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+  svg.donut { transform: rotate(-90deg); }
+  .donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .donut-center-val {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 300;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .donut-center-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+  .legend { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 180px; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { color: var(--text2); flex: 1; }
+  .legend-amt { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); }
+  .legend-pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); min-width: 38px; text-align: right; }
+
+  @media (max-width: 600px) {
+    .buckets { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .revenue-block { gap: 1rem; }
+    .rev-value { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="header-tag">Profit First System · Freiberufler §18 EStG</div>
+    <h1>Profit First<br><em>Rechner</em></h1>
+    <div class="header-note">Oliver Fries · Finanzsystem-Kalkulator 2025</div>
+  </header>
+
+  <!-- Revenue -->
+  <div class="sec-label">Monatliche Einnahme</div>
+  <div class="revenue-block">
+    <div class="rev-label">Einnahme (netto)</div>
+    <div class="rev-slider-wrap">
+      <input type="range" id="rev" min="500" max="20000" step="100" value="1000" oninput="calc()">
+    </div>
+    <div class="rev-value" id="revVal">1.000 €</div>
+  </div>
+
+  <div class="info-box">
+    ✓ Als Freiberufler (§18 EStG) zahlst du keine Gewerbesteuer — nur Einkommensteuer auf den Jahresgewinn.
+  </div>
+
+  <!-- Buckets -->
+  <div class="sec-label">Profit First — Kontenaufteilung</div>
+
+  <!-- Donut -->
+  <div class="chart-wrap">
+    <div class="donut-container">
+      <svg class="donut" width="160" height="160" viewBox="0 0 160 160" id="donutSvg">
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#222220" stroke-width="24"/>
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#4ade80" stroke-width="24"
+          id="d-profit" stroke-dasharray="0 377" stroke-dashoffset="0"/>
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#f87171" stroke-width="24"
+          id="d-tax" stroke-dasharray="0 377" stroke-dashoffset="0"/>
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#60a5fa" stroke-width="24"
+          id="d-owner" stroke-dasharray="0 377" stroke-dashoffset="0"/>
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#5c5a57" stroke-width="24"
+          id="d-ops" stroke-dasharray="0 377" stroke-dashoffset="0"/>
+      </svg>
+      <div class="donut-center">
+        <div class="donut-center-val" id="dc-val">1.000 €</div>
+        <div class="donut-center-label">Einnahme</div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--profit)"></div>
+        <span class="legend-name">Profit</span>
+        <span class="legend-amt" id="l-prof">50 €</span>
+        <span class="legend-pct" id="l-prof-pct">5 %</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--tax)"></div>
+        <span class="legend-name">Steuerkonto</span>
+        <span class="legend-amt" id="l-tax">350 €</span>
+        <span class="legend-pct" id="l-tax-pct">35 %</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--owner)"></div>
+        <span class="legend-name">Owner Pay</span>
+        <span class="legend-amt" id="l-op">400 €</span>
+        <span class="legend-pct" id="l-op-pct">40 %</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--ops)"></div>
+        <span class="legend-name">Betriebskosten</span>
+        <span class="legend-amt" id="l-bc">200 €</span>
+        <span class="legend-pct" id="l-bc-pct">20 %</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="buckets">
+    <!-- Profit -->
+    <div class="bucket bucket-profit">
+      <div class="bucket-top">
+        <div class="bucket-name"><div class="dot" style="background:var(--profit)"></div>Profit</div>
+        <div class="bucket-pct" id="profPct">5 %</div>
+      </div>
+      <div class="bucket-amt" id="profAmt">50 €</div>
+      <input type="range" class="bucket-slider" style="--c:var(--profit)" id="profS" min="2" max="15" step="1" value="5" oninput="calc()">
+      <div class="bucket-hint">Empfehlung: 5–10 % · Niemals antasten</div>
+    </div>
+    <!-- Steuer -->
+    <div class="bucket bucket-tax">
+      <div class="bucket-top">
+        <div class="bucket-name"><div class="dot" style="background:var(--tax)"></div>Steuerkonto</div>
+        <div class="bucket-pct" id="taxPct">35 %</div>
+      </div>
+      <div class="bucket-amt" id="taxAmt">350 €</div>
+      <input type="range" class="bucket-slider" id="taxS" min="15" max="45" step="1" value="35" oninput="calc()">
+      <div class="bucket-hint">Empfehlung: 30–40 % · deckt EST-Vorauszahlungen</div>
+    </div>
+    <!-- Owner Pay -->
+    <div class="bucket bucket-owner">
+      <div class="bucket-top">
+        <div class="bucket-name"><div class="dot" style="background:var(--owner)"></div>Owner Pay</div>
+        <div class="bucket-pct" id="opPct">40 %</div>
+      </div>
+      <div class="bucket-amt" id="opAmt">400 €</div>
+      <input type="range" class="bucket-slider" id="opS" min="20" max="65" step="1" value="40" oninput="calc()">
+      <div class="bucket-hint">Dein Privatgehalt · brutto auf Privatkonto</div>
+    </div>
+    <!-- Betriebskosten -->
+    <div class="bucket">
+      <div class="bucket-top">
+        <div class="bucket-name"><div class="dot" style="background:var(--ops)"></div>Betriebskosten</div>
+        <div class="bucket-pct" id="bcPct">20 %</div>
+      </div>
+      <div class="bucket-amt" id="bcAmt">200 €</div>
+      <div class="bucket-hint">Automatisch · Rest nach anderen Konten</div>
+    </div>
+  </div>
+
+  <div id="warnOver" class="warn">⚠ Summe übersteigt 100 % — Betriebskosten würden negativ. Werte reduzieren.</div>
+
+  <hr class="divider">
+
+  <!-- Steuerberechnung -->
+  <div class="sec-label">Einkommensteuer — auf Jahresgewinn</div>
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Jahresgewinn (est.)</div>
+      <div class="metric-val" id="gwJahr">9.600 €</div>
+      <div class="metric-sub">Umsatz − Betriebskosten × 12</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Einkommensteuer / Jahr</div>
+      <div class="metric-val neg" id="estJahr">0 €</div>
+      <div class="metric-sub" id="estEffPct">0 % effektiv</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">EST pro Monat</div>
+      <div class="metric-val neg" id="estMonat">0 €</div>
+      <div class="metric-sub">vom Steuerkonto</div>
+    </div>
+  </div>
+  <div id="taxwarn" class="tax-warn">
+    ⚠ Steuerkonto zu knapp: EST-Bedarf <strong id="twNeed"></strong>/Monat — Rücklage nur <strong id="twHave"></strong>/Monat. Steuerkonto-Anteil erhöhen!
+  </div>
+
+  <hr class="divider">
+
+  <!-- Persönliches Netto -->
+  <div class="sec-label">Persönliches Netto — aus Owner Pay</div>
+
+  <label class="toggle-row">
+    <input type="checkbox" id="kinderlos" onchange="calc()" checked>
+    Kinderlosenzuschlag (+0,6 % Pflege, keine Kinder)
+  </label>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Owner Pay (brutto)</div>
+      <div class="metric-val pos" id="opG">400 €</div>
+      <div class="metric-sub">Überweisung auf Privatkonto</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">GKV + Pflege</div>
+      <div class="metric-val neg" id="gkvAmt">− 80 €</div>
+      <div class="metric-sub" id="gkvPct">~20 % vom Owner Pay</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">EST-Anteil / Monat</div>
+      <div class="metric-val neg" id="estShare">− 0 €</div>
+      <div class="metric-sub">aus Steuerkonto, nicht von Owner Pay</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <span>Owner Pay</span>
+    <span class="fn" id="fl1">400 €</span>
+    <span>−</span>
+    <span>GKV/Pflege</span>
+    <span class="fm" id="fl2">80 €</span>
+    <span>=</span>
+    <span class="fo" id="fl3">320 €</span>
+    <span class="flow-note">
+      Einkommensteuer (<span id="estLine">0 €/Jahr</span>) wird quartalsweise direkt vom Steuerkonto ans Finanzamt überwiesen — erscheint nicht auf deinem Privatkonto.
+    </span>
+  </div>
+
+  <div class="netto-card">
+    <div class="netto-label">Netto für dich monatlich</div>
+    <div class="netto-val" id="netto">320 €</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Jahresübersicht -->
+  <div class="sec-label">Jahresübersicht</div>
+  <div class="metrics" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+    <div class="metric">
+      <div class="metric-label">Jahresumsatz</div>
+      <div class="metric-val" id="jahresUmsatz">12.000 €</div>
+      <div class="metric-sub">bei gleichbleibender Einnahme</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Profit-Rücklage / Jahr</div>
+      <div class="metric-val pos" id="jahresProfit">600 €</div>
+      <div class="metric-sub">echter Unternehmensgewinn</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Steuerkonto / Jahr</div>
+      <div class="metric-val" id="jahresSteuer">4.200 €</div>
+      <div class="metric-sub">Rücklage für EST-Vorauszahlungen</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Netto-Gehalt / Jahr</div>
+      <div class="metric-val pos" id="jahresNetto">3.840 €</div>
+      <div class="metric-sub">nach GKV/Pflege</div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Rechtlicher Hinweis:</strong> Dieses Tool dient ausschließlich zur Orientierung und stellt keine Steuer- oder Rechtsberatung dar.<br>
+    Einkommensteuer: §32a EStG 2025, Grundfreibetrag 12.096 €, vereinfachte Formel ohne Solidaritätszuschlag und Kirchensteuer.<br>
+    GKV: 14,6 % Basisbeitrag + 1,7 % Zusatzbeitrag + Pflegeversicherung (BBG 5.512,50 €/Monat).<br>
+    Freiberufler nach §18 EStG: keine Gewerbesteuerpflicht. Bitte Angaben mit deinem Steuerberater abstimmen.<br><br>
+    Oliver Fries · Profit First System · 2025
+  </div>
+
+</div>
+
+<script>
+  const C = Math.PI * 2 * 60;
+
+  function fmt(n) {
+    return Math.round(n).toLocaleString('de-DE') + ' €';
+  }
+
+  function estCalc(z) {
+    const gf = 12096;
+    if (z <= gf) return 0;
+    if (z <= 17443) { const y = (z - gf) / 10000; return (979.18 * y + 1400) * y; }
+    if (z <= 66761) { const y = (z - 17443) / 10000; return (192.59 * y + 2397) * y + 966; }
+    if (z <= 277826) return 0.42 * z - 10911;
+    return 0.45 * z - 19246;
+  }
+
+  function updateDonut(profPct, taxPct, opPct, bcPct) {
+    const total = 100;
+    const pcts = [profPct, taxPct, opPct, bcPct];
+    const ids = ['d-profit', 'd-tax', 'd-owner', 'd-ops'];
+    let offset = 0;
+    pcts.forEach((p, i) => {
+      const len = (p / total) * C;
+      const el = document.getElementById(ids[i]);
+      el.setAttribute('stroke-dasharray', len.toFixed(2) + ' ' + (C - len).toFixed(2));
+      el.setAttribute('stroke-dashoffset', (-offset).toFixed(2));
+      offset += len;
+    });
+  }
+
+  function updateSliderTrack(el, pct, min, max) {
+    const ratio = ((pct - min) / (max - min)) * 100;
+    el.style.background = `linear-gradient(to right, var(--accent) ${ratio}%, var(--border2) ${ratio}%)`;
+  }
+
+  function calc() {
+    const rev = +document.getElementById('rev').value;
+    const profPct = +document.getElementById('profS').value;
+    const taxPct = +document.getElementById('taxS').value;
+    const opPct = +document.getElementById('opS').value;
+    const kinderlos = document.getElementById('kinderlos').checked;
+    const usedPct = profPct + taxPct + opPct;
+    const bcPct = Math.max(0, 100 - usedPct);
+
+    // Update slider tracks
+    updateSliderTrack(document.getElementById('profS'), profPct, 2, 15);
+    updateSliderTrack(document.getElementById('taxS'), taxPct, 15, 45);
+    updateSliderTrack(document.getElementById('opS'), opPct, 20, 65);
+
+    // Amounts
+    const profAmt = rev * profPct / 100;
+    const taxAmt  = rev * taxPct  / 100;
+    const opAmt   = rev * opPct   / 100;
+    const bcAmt   = rev * bcPct   / 100;
+
+    // Revenue display
+    document.getElementById('revVal').textContent = rev.toLocaleString('de-DE') + ' €';
+    document.getElementById('dc-val').textContent = rev.toLocaleString('de-DE') + ' €';
+
+    // Bucket display
+    document.getElementById('profPct').textContent = profPct + ' %';
+    document.getElementById('taxPct').textContent  = taxPct  + ' %';
+    document.getElementById('opPct').textContent   = opPct   + ' %';
+    document.getElementById('bcPct').textContent   = bcPct   + ' %';
+    document.getElementById('profAmt').textContent = fmt(profAmt);
+    document.getElementById('taxAmt').textContent  = fmt(taxAmt);
+    document.getElementById('opAmt').textContent   = fmt(opAmt);
+    document.getElementById('bcAmt').textContent   = fmt(bcAmt);
+
+    // Legend
+    document.getElementById('l-prof').textContent    = fmt(profAmt);
+    document.getElementById('l-tax').textContent     = fmt(taxAmt);
+    document.getElementById('l-op').textContent      = fmt(opAmt);
+    document.getElementById('l-bc').textContent      = fmt(bcAmt);
+    document.getElementById('l-prof-pct').textContent = profPct + ' %';
+    document.getElementById('l-tax-pct').textContent  = taxPct  + ' %';
+    document.getElementById('l-op-pct').textContent   = opPct   + ' %';
+    document.getElementById('l-bc-pct').textContent   = bcPct   + ' %';
+
+    // Donut
+    updateDonut(profPct, taxPct, opPct, bcPct);
+
+    // Warning
+    document.getElementById('warnOver').style.display = usedPct > 100 ? 'block' : 'none';
+
+    // EST on annual profit
+    const gewinnJahr = (rev - bcAmt) * 12;
+    const estJahr    = Math.max(0, estCalc(gewinnJahr));
+    const estMonat   = estJahr / 12;
+    const effPct     = gewinnJahr > 0 ? (estJahr / gewinnJahr * 100).toFixed(1) : '0';
+
+    document.getElementById('gwJahr').textContent   = fmt(gewinnJahr);
+    document.getElementById('estJahr').textContent  = fmt(estJahr);
+    document.getElementById('estMonat').textContent = fmt(estMonat);
+    document.getElementById('estEffPct').textContent = effPct + ' % effektiv';
+    document.getElementById('estShare').textContent = '− ' + fmt(estMonat);
+    document.getElementById('estLine').textContent  = Math.round(estJahr).toLocaleString('de-DE') + ' €/Jahr';
+
+    const tw = document.getElementById('taxwarn');
+    if (estMonat > taxAmt) {
+      tw.style.display = 'block';
+      document.getElementById('twNeed').textContent = fmt(estMonat);
+      document.getElementById('twHave').textContent = fmt(taxAmt);
+    } else {
+      tw.style.display = 'none';
+    }
+
+    // GKV
+    const pflegeRate = kinderlos ? 0.040 : 0.034;
+    const gkvRate    = 0.146 + 0.017 + pflegeRate;
+    const bbg        = 5512.5;
+    const gkvBase    = Math.min(opAmt, bbg);
+    const gkvMonat   = gkvBase * gkvRate;
+    const gkvPctShow = Math.round(gkvRate * 100);
+
+    document.getElementById('opG').textContent    = fmt(opAmt);
+    document.getElementById('gkvAmt').textContent = '− ' + fmt(gkvMonat);
+    document.getElementById('gkvPct').textContent = '~' + gkvPctShow + ' % vom Owner Pay';
+
+    const netto = opAmt - gkvMonat;
+    document.getElementById('fl1').textContent    = fmt(opAmt);
+    document.getElementById('fl2').textContent    = fmt(gkvMonat);
+    document.getElementById('fl3').textContent    = fmt(netto);
+    document.getElementById('netto').textContent  = fmt(netto);
+
+    // Jahresübersicht
+    document.getElementById('jahresUmsatz').textContent  = fmt(rev * 12);
+    document.getElementById('jahresProfit').textContent  = fmt(profAmt * 12);
+    document.getElementById('jahresSteuer').textContent  = fmt(taxAmt * 12);
+    document.getElementById('jahresNetto').textContent   = fmt(netto * 12);
+  }
+
+  // Init
+  calc();
+</script>
+</body>
+</html>
