@@ -14,6 +14,10 @@ https://<your-github-username-or-org>.github.io/Profit_First_Calculator/
 
 If Pages is not enabled yet, open **Settings → Pages** in GitHub and set **Build and deployment → Source** to **GitHub Actions**.
 
+## OpenClaw integration UX
+
+Guidance for the Flutter authentication and first-run onboarding experience for self-hosted OpenClaw instances is available in [`docs/openclaw_auth_onboarding_ux.md`](docs/openclaw_auth_onboarding_ux.md).
+
 ## Local preview
 
 Because the app is static, you can preview it locally with any static file server. For example:
